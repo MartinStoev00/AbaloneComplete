@@ -17,6 +17,9 @@ public class AbaloneServer implements Runnable {
 	private ArrayList<Room> rooms;
 	private HashMap<String, Integer> leaderBoard;
 
+	/**
+	 * Gives values to different variables
+	 */
 	public AbaloneServer() {
 		clientNumber = 1;
 		rooms = new ArrayList<>();
@@ -28,6 +31,9 @@ public class AbaloneServer implements Runnable {
 		}
 	}
 
+	/**
+	 * Adds people to an arrayList and show if the are connected
+	 */
 	@Override
 	public void run() {
 		boolean openNewSocket = true;
@@ -51,6 +57,11 @@ public class AbaloneServer implements Runnable {
 		view.showMessage("See you later!");
 	}
 
+	/**
+	 * Creates the server the a give port number
+	 * 
+	 * @throws ExitProgram
+	 */
 	public void setup() throws ExitProgram {
 		ssock = null;
 		String ip = "";
@@ -62,23 +73,44 @@ public class AbaloneServer implements Runnable {
 				ssock = new ServerSocket(port, 0, InetAddress.getByName(ip));
 				view.showMessage("Server started at port " + port);
 			} catch (IOException e) {
-				view.showMessage("ERROR: could not create a socket on " + ip +" and port " + port + ".");
+				view.showMessage("ERROR: could not create a socket on " + ip + " and port " + port + ".");
 			}
 		}
 	}
 
+	/**
+	 * A getter for the rooms ArrayList
+	 * 
+	 * @return rooms
+	 */
 	public ArrayList<Room> getRooms() {
 		return rooms;
 	}
 
+	/**
+	 * Removes a client from clientArray
+	 * 
+	 * @param client
+	 */
 	public void removeClient(AbaloneClientHandler client) {
 		clientArray.remove(client);
 	}
 
+	/**
+	 * Returns the clientArray
+	 * 
+	 * @return
+	 */
 	public ArrayList<AbaloneClientHandler> getClientArray() {
 		return clientArray;
 	}
 
+	/**
+	 * Checks if the name is contained in the server
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public boolean containsClientWithName(String name) {
 		for (AbaloneClientHandler ach : clientArray) {
 			if (ach.getPlayer().getName().equals(name)) {
@@ -88,11 +120,21 @@ public class AbaloneServer implements Runnable {
 		return false;
 	}
 
+	/**
+	 * Gets the AbaloneServerTUI
+	 * 
+	 * @return view
+	 */
 	public AbaloneServerTUI getView() {
 		return view;
 	}
-	
-	public HashMap<String, Integer> getLeaderBoard(){
+
+	/**
+	 * Returns the leaderBoard ArrayList
+	 * 
+	 * @return
+	 */
+	public HashMap<String, Integer> getLeaderBoard() {
 		return leaderBoard;
 	}
 

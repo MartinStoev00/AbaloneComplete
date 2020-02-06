@@ -28,12 +28,18 @@ public class AbaloneClientTUI implements Runnable {
 	private boolean hasStarted = false;
 	private boolean isConnected = false;
 	private boolean reconnected = false;
-
+/**
+ * Gives values to the Client and the Scanner
+ */
 	public AbaloneClientTUI() {
 		ac = new AbaloneClient();
 		scanner = new Scanner(System.in);
 	}
-
+/**
+ * Starts the client, asks for a name, select a bot 
+ * option and then chooses to reconnect
+ * @throws ServerUnavailableException
+ */
 	public void start() throws ServerUnavailableException {
 		InetAddress ip = getIp();
 		int port = getInt("Port: ");
@@ -95,7 +101,9 @@ public class AbaloneClientTUI implements Runnable {
 			start();
 		}
 	}
-
+/**
+ * Reads the incoming messages and acts based on them
+ */
 	@Override
 	public void run() {
 		while (isConnected) {
@@ -112,7 +120,11 @@ public class AbaloneClientTUI implements Runnable {
 			}
 		}
 	}
-
+/**
+ * Handles the incoming command
+ * @param msg
+ * @throws ServerUnavailableException
+ */
 	public void handleIncomingCommand(String msg) throws ServerUnavailableException {
 		String[] msgs = msg.split(";");
 		switch (msgs[0]) {
@@ -266,7 +278,12 @@ public class AbaloneClientTUI implements Runnable {
 			break;
 		}
 	}
-
+/**
+ * Sends the user commands to server
+ * @param input
+ * @throws ExitProgram
+ * @throws ServerUnavailableException
+ */
 	public void handleUserInput(String input) throws ExitProgram, ServerUnavailableException {
 		try {
 			String[] msgs = input.split(" ");
@@ -328,11 +345,17 @@ public class AbaloneClientTUI implements Runnable {
 			System.out.print("> Enter command here: ");
 		}
 	}
-
+/**
+ * Show a message
+ * @param message
+ */
 	public static void showMessage(String message) {
 		System.out.print(message);
 	}
-
+/**
+ * Wants an address
+ * @return ip address
+ */
 	public InetAddress getIp() {
 		System.out.print("Please enter IP address here: ");
 		String ips = scanner.nextLine();
@@ -345,14 +368,20 @@ public class AbaloneClientTUI implements Runnable {
 		}
 		return ip;
 	}
-
+/**
+ * Prints help menu
+ */
 	public void help() {
 		System.out.println("HELP MANUAL\n" + "d..................................... exit\n" + "m <coordinates> <direction>............move\n" + "a <name>......................picks an ally\n"
 				+ "l............................leave the room\n" + "n <name>.....................deny challenge\n" + "s...........................starts the game\n" + "h..........................help (this menu)\n"
 				+ "w <name>..................challenge someone\n" + "q........................you receive a hint\n" + "p.......................display leaderboard\n" + "y <name>...............accept the challenge\n"
 				+ "j <room>............joins the room inserted\n" + "b <text>...sends text to people in the room\n" + "r...display the rooms and the peopel inside");
 	}
-
+/**
+ * Asks for int 
+ * @param question
+ * @return the input
+ */
 	public static int getInt(String question) {
 		System.out.print(question);
 		String result = scanner.nextLine();

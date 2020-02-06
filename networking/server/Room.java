@@ -21,6 +21,10 @@ public class Room {
 	private boolean gameHasStarted = false;
 	private ArrayList<AbaloneClientHandler> room;
 
+	/**
+	 * Gives values to the ArrayList with the players and winners and increments the
+	 * room number
+	 */
 	public Room() {
 		number++;
 		room = new ArrayList<>();
@@ -28,10 +32,21 @@ public class Room {
 		name = String.valueOf(number);
 	}
 
+	/**
+	 * Returns the party leader of the room
+	 * 
+	 * @return room.get(0)
+	 */
 	public AbaloneClientHandler getLeader() {
 		return room.get(0);
 	}
 
+	/**
+	 * Person leaves the room
+	 * 
+	 * @param removedPlayer
+	 * @return
+	 */
 	public String leave(AbaloneClientHandler removedPlayer) {
 		room.remove(removedPlayer);
 		removedPlayer.setRoom(null);
@@ -41,6 +56,12 @@ public class Room {
 		return String.valueOf(ProtocolMessages.LEAVE) + String.valueOf(ProtocolMessages.DELIMITER) + removedPlayer.getPlayer().getName() + "\n";
 	}
 
+	/**
+	 * Add person to the room ArrayList
+	 * 
+	 * @param addedPlayer
+	 * @return the message
+	 */
 	public String join(AbaloneClientHandler addedPlayer) {
 		if (room.size() < 4 && !(gameHasStarted && !gameHasEnded)) {
 			room.add(addedPlayer);
@@ -54,6 +75,13 @@ public class Room {
 		return error("CommandNotRecognized");
 	}
 
+	/**
+	 * Select an ally
+	 * 
+	 * @param name
+	 * @requires isFour && !gameHasStarted && hasPerson && !isSameName
+	 * @return the message
+	 */
 	public String ally(String name) {
 		boolean isFour = room.size() == 4;
 		boolean isSameName = getLeader().equals(getPlayerByName(name));
@@ -77,6 +105,11 @@ public class Room {
 		return error("InvalidPermission");
 	}
 
+	/**
+	 * Removes the marbles of a specific person and add people to winner ArrayList
+	 * 
+	 * @param name
+	 */
 	public void removeMarblesBecauseOfDisconnection(String name) {
 		if (gameHasStarted && room.size() == 3) {
 			if (name.equals(turn())) {
@@ -110,11 +143,21 @@ public class Room {
 			}
 		}
 	}
-	
+
+	/**
+	 * Changes the room name if it is a challenge room
+	 */
 	public void startChallenge() {
 		name = "C" + name;
 	}
 
+	/**
+	 * Starts the room
+	 * 
+	 * @requires room.size() > 1 && !(gameHasStarted && !gameHasEnded) &&
+	 *           !(room.size() == 4 ^ allyPicked)
+	 * @return message for starting the game
+	 */
 	public String start() {
 		if (room.size() > 1 && !(gameHasStarted && !gameHasEnded) && !(room.size() == 4 ^ allyPicked)) {
 			ArrayList<Player> players = new ArrayList<>();
@@ -143,22 +186,49 @@ public class Room {
 		return error("GameHasStarted");
 	}
 
+	/**
+	 * Constructs an error message
+	 * 
+	 * @param error
+	 * @return error message
+	 */
 	public static String error(String error) {
 		return String.valueOf(ProtocolMessages.ERROR) + String.valueOf(ProtocolMessages.DELIMITER) + error + "\n";
 	}
 
+	/**
+	 * Returns the current player
+	 * 
+	 * @requires gameHasStarted && !gameHasEnded
+	 * @return current player name
+	 */
 	public String turn() {
-		if(gameHasStarted && !gameHasEnded) {
+		if (gameHasStarted && !gameHasEnded) {
 			return room.get(turn % marks.size()).getPlayer().getName();
 		} else {
 			return error("CommandNotRecognized");
 		}
 	}
 
+	/**
+	 * A getter for the winners
+	 * 
+	 * @return winners
+	 */
 	public ArrayList<String> winners() {
 		return winners;
 	}
 
+	/**
+	 * Makes a move on the local board
+	 * 
+	 * @param coordinates
+	 * @param direction
+	 * @param player
+	 * @requires !localBoard.hasWinner() && isValidMove && isCurrentMark && turn <=
+	 *           turnLimit && gameHasStarted && !gameHasEnded
+	 * @return move message
+	 */
 	public String move(String coordinates, String direction, Player player) {
 		boolean isValidMove = localBoard.isValidMove(coordinates, direction, getMarkByPlayerName(turn()));
 		boolean isCurrentMark = getMarkByPlayerName(turn()) == player.getMark();
@@ -193,10 +263,22 @@ public class Room {
 		return error("OutOfTurns");
 	}
 
+	/**
+	 * Return gameHasEnded variable
+	 * 
+	 * @return gameHasEnded
+	 */
 	public boolean gameHasEnded() {
 		return gameHasEnded;
 	}
 
+	/**
+	 * Returns the AbaloneClientHandler based on name
+	 * 
+	 * @param name
+	 * @requires person to be in a room
+	 * @return AbaloneClientHandler based on name
+	 */
 	public AbaloneClientHandler getPlayerByName(String name) {
 		for (AbaloneClientHandler ach : room) {
 			if (ach.getPlayer().getName().equals(name)) {
@@ -206,6 +288,12 @@ public class Room {
 		return null;
 	}
 
+	/**
+	 * Checks if a person is in the room
+	 * 
+	 * @param name
+	 * @return true if person is in the room ArrayList
+	 */
 	public boolean containsPlayerWithName(String name) {
 		if (getPlayerByName(name) == null) {
 			return false;
@@ -213,18 +301,39 @@ public class Room {
 		return true;
 	}
 
+	/**
+	 * Returns the board
+	 * 
+	 * @return localBoard
+	 */
 	public Board getBoard() {
 		return localBoard;
 	}
-	
+
+	/**
+	 * Returns the gameHasStarted
+	 * 
+	 * @return gameHasStarted
+	 */
 	public boolean gameHasStarted() {
 		return gameHasStarted;
 	}
 
+	/**
+	 * Returns the room ArrayList
+	 * 
+	 * @return room
+	 */
 	public ArrayList<AbaloneClientHandler> getRoom() {
 		return room;
 	}
 
+	/**
+	 * Gets the Mark based on the given name
+	 * 
+	 * @param name
+	 * @return Mark based on the given name
+	 */
 	public Mark getMarkByPlayerName(String name) {
 		for (AbaloneClientHandler ach : room) {
 			if (ach.getPlayer().getName().equals(name)) {
@@ -234,10 +343,18 @@ public class Room {
 		return null;
 	}
 
+	/**
+	 * Gets the name of the room
+	 * 
+	 * @return name;
+	 */
 	public String getNumber() {
 		return name;
 	}
 
+	/**
+	 * Makes the toString with the game state, people inside and the people in it
+	 */
 	public String toString() {
 		String gamestance = "";
 		gamestance = !(gameHasStarted && !gameHasEnded) ? "notStarted" : "Started";

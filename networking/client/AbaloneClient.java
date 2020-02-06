@@ -18,6 +18,12 @@ public class AbaloneClient {
 	private BufferedReader in;
 	private BufferedWriter out;
 
+	/**
+	 * Starts a connection using the nickname of the player
+	 * 
+	 * @requires Server to be available
+	 * @param nickname
+	 */
 	public void start(String nickname) {
 		try {
 			connect(nickname);
@@ -27,6 +33,14 @@ public class AbaloneClient {
 		}
 	}
 
+	/**
+	 * Gives values to the local variable
+	 * 
+	 * @param addr
+	 * @param port
+	 * @throws ExitProgram
+	 * @throws IOException
+	 */
 	public void createConnection(InetAddress addr, int port) throws ExitProgram, IOException {
 		clearConnection();
 		while (serverSock == null) {
@@ -38,12 +52,21 @@ public class AbaloneClient {
 		System.out.println("Connected");
 	}
 
+	/**
+	 * Sets local variable to be null
+	 */
 	public void clearConnection() {
 		serverSock = null;
 		in = null;
 		out = null;
 	}
 
+	/**
+	 * Sends a message to the sever
+	 * 
+	 * @param msg
+	 * @throws ServerUnavailableException
+	 */
 	public synchronized void sendMessage(String msg) throws ServerUnavailableException {
 		if (out != null) {
 			try {
@@ -59,6 +82,12 @@ public class AbaloneClient {
 		}
 	}
 
+	/**
+	 * Reads lie from server
+	 * 
+	 * @return the retuned line
+	 * @throws ServerUnavailableException
+	 */
 	public String readLineFromServer() throws ServerUnavailableException {
 		if (in != null) {
 			try {
@@ -75,6 +104,11 @@ public class AbaloneClient {
 		}
 	}
 
+	/**
+	 * Closes the connection with the server
+	 * 
+	 * @throws ServerUnavailableException
+	 */
 	public void closeConnection() throws ServerUnavailableException {
 		showMessage("Closing the connection...");
 		try {
@@ -86,71 +120,139 @@ public class AbaloneClient {
 		}
 	}
 
+	/**
+	 * Displays the given message
+	 * 
+	 * @param message
+	 */
 	public void showMessage(String message) {
 		System.out.print(message);
 	}
 
+	/**
+	 * Sends a connect message
+	 * 
+	 * @param name
+	 * @throws ServerUnavailableException
+	 */
 	public void connect(String name) throws ServerUnavailableException {
 		sendMessage(String.valueOf(ProtocolMessages.CONNECT) + String.valueOf(ProtocolMessages.DELIMITER + name));
 	}
 
+	/**
+	 * Sends s disconnect message
+	 * 
+	 * @throws ServerUnavailableException
+	 */
 	public void disconnect() throws ServerUnavailableException {
 		sendMessage(String.valueOf(ProtocolMessages.DISCONNECT) + String.valueOf(ProtocolMessages.DELIMITER));
 		closeConnection();
 	}
 
+	/**
+	 * Sends a move message
+	 * 
+	 * @param coordinates
+	 * @param direction
+	 * @throws ServerUnavailableException
+	 */
 	public void move(String coordinates, String direction) throws ServerUnavailableException {
 		sendMessage(String.valueOf(ProtocolMessages.MOVE) + String.valueOf(ProtocolMessages.DELIMITER + coordinates + ProtocolMessages.DELIMITER + direction));
-		showMessage(readLineFromServer());
 	}
 
+	/**
+	 * Sends a room request
+	 * 
+	 * @throws ServerUnavailableException
+	 */
 	public void room() throws ServerUnavailableException {
 		sendMessage(String.valueOf(ProtocolMessages.ROOMS) + String.valueOf(ProtocolMessages.DELIMITER));
-		showMessage(readLineFromServer());
 	}
 
+	/**
+	 * Sends a leaderBoard request
+	 * 
+	 * @throws ServerUnavailableException
+	 */
 	public void leaderBoard() throws ServerUnavailableException {
 		sendMessage(String.valueOf(ProtocolMessages.LEADERBOARD) + String.valueOf(ProtocolMessages.DELIMITER));
-		showMessage(readLineFromServer());
 	}
 
+	/**
+	 * Sends a challenge request
+	 * 
+	 * @param name
+	 * @throws ServerUnavailableException
+	 */
 	public void challenge(String name) throws ServerUnavailableException {
 		sendMessage(String.valueOf(ProtocolMessages.CHALLENGE) + String.valueOf(ProtocolMessages.DELIMITER) + name);
-		showMessage(readLineFromServer());
 	}
 
+	/**
+	 * Accepts the given challenge
+	 * 
+	 * @param name
+	 * @throws ServerUnavailableException
+	 */
 	public void acceptChallenge(String name) throws ServerUnavailableException {
 		sendMessage(String.valueOf(ProtocolMessages.ACCEPTCHALLENGE) + String.valueOf(ProtocolMessages.DELIMITER) + name);
-		showMessage(readLineFromServer());
 	}
 
+	/**
+	 * Denies a given challenge
+	 * 
+	 * @param name
+	 * @throws ServerUnavailableException
+	 */
 	public void denyChallenge(String name) throws ServerUnavailableException {
 		sendMessage(String.valueOf(ProtocolMessages.DENYCHALLENGE) + String.valueOf(ProtocolMessages.DELIMITER) + name);
-		showMessage(readLineFromServer());
 	}
 
+	/**
+	 * Joins a given room
+	 * 
+	 * @param roomNum
+	 * @throws ServerUnavailableException
+	 */
 	public void join(String roomNum) throws ServerUnavailableException {
 		sendMessage(String.valueOf(ProtocolMessages.JOIN) + String.valueOf(ProtocolMessages.DELIMITER + roomNum));
-		showMessage(readLineFromServer());
 	}
 
+	/**
+	 * Leaves the current room
+	 * 
+	 * @throws ServerUnavailableException
+	 */
 	public void leave() throws ServerUnavailableException {
 		sendMessage(String.valueOf(ProtocolMessages.LEAVE) + String.valueOf(ProtocolMessages.DELIMITER));
-		showMessage(readLineFromServer());
 	}
 
+	/**
+	 * Sends a text to the current room
+	 * 
+	 * @param text
+	 * @throws ServerUnavailableException
+	 */
 	public void text(String text) throws ServerUnavailableException {
 		sendMessage(String.valueOf(ProtocolMessages.TEXT) + String.valueOf(ProtocolMessages.DELIMITER + text));
-		showMessage(readLineFromServer());
 	}
 
+	/**
+	 * Select an ally in the room
+	 * 
+	 * @param name
+	 * @throws ServerUnavailableException
+	 */
 	public void ally(String name) throws ServerUnavailableException {
 		sendMessage(String.valueOf(ProtocolMessages.ALLY) + String.valueOf(ProtocolMessages.DELIMITER + name));
-		showMessage(readLineFromServer());
 	}
 
+	/**
+	 * Sends a request to start the game
+	 * 
+	 * @throws ServerUnavailableException
+	 */
 	public void startGame() throws ServerUnavailableException {
 		sendMessage(String.valueOf(ProtocolMessages.START) + String.valueOf(ProtocolMessages.DELIMITER));
-		showMessage(readLineFromServer());
 	}
 }

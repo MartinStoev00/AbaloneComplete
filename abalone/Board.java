@@ -4,7 +4,13 @@ import java.util.ArrayList;
 
 public class Board extends BoardUtils {
 
-//Constructor
+	/**
+	 * Takes in an ArrayList with player names and set their values to the mark they
+	 * are supposed to have based on the order and the amount if players and takes
+	 * players.size() as a parameter of the second constructor
+	 * 
+	 * @param players
+	 */
 	public Board(ArrayList<Player> players) {
 		this(players.size());
 		for (int i = 0; i < players.size(); i++) {
@@ -15,13 +21,28 @@ public class Board extends BoardUtils {
 		}
 	}
 
+	/**
+	 * Set the input as the local variable, fills the values array with the
+	 * appropriate values and the fills the board with them
+	 * 
+	 * @param numOfColors
+	 */
 	public Board(int numOfColors) {
 		super.numOfColors = numOfColors;
 		fillIn();
 		reset();
 	}
 
-//moves one without pushing
+	/**
+	 * Moves a marble with a given direction position and mark
+	 * 
+	 * @param firstpos
+	 * @param direction
+	 * @param mark
+	 * @requires isEEE(movedCoordinates(firstpos, direction)) && getMark(firstpos)
+	 *           == mark
+	 * @return true if the move was possible
+	 */
 	public boolean moveWithoutPush(String firstpos, int direction, Mark mark) {
 		if (isEEE(movedCoordinates(firstpos, direction)) && getMark(firstpos) == mark) {
 			super.map.put(movedCoordinates(firstpos, direction), mark);
@@ -31,7 +52,17 @@ public class Board extends BoardUtils {
 		return false;
 	}
 
-//moves two without pushing
+	/**
+	 * Moves two marbles without pushing
+	 * 
+	 * @param firstpos
+	 * @param secondpos
+	 * @param direction
+	 * @param mark
+	 * @requires isLine(firstpos, secondpos) && (getMark(firstpos) == mark ||
+	 *           getMark(secondpos) == mark)
+	 * @return true if the move was possible
+	 */
 	public boolean moveWithoutPush(String firstpos, String secondpos, int direction, Mark mark) {
 		boolean isEEEInFrontOf1 = isEEE(movedCoordinates(firstpos, direction));
 		boolean isEEEInFrontOf2 = isEEE(movedCoordinates(secondpos, direction));
@@ -59,7 +90,17 @@ public class Board extends BoardUtils {
 		return false;
 	}
 
-//moves two with pushing 
+	/**
+	 * Makes a move that based on the marbles in front and the direction can push
+	 * 
+	 * @param firstpos
+	 * @param secondpos
+	 * @param direction
+	 * @param mark
+	 * @requires isLine(firstpos, secondpos) && (getMark(firstpos) == mark ||
+	 *           (numOfColors == 4 && mark.isAlly(getMark(firstpos))))
+	 * @return true if the move was possible
+	 */
 	public boolean moveWithPush(String firstpos, String secondpos, int direction, Mark mark) {
 		if (isLine(firstpos, secondpos) && (getMark(firstpos) == mark || (numOfColors == 4 && mark.isAlly(getMark(firstpos))))) {
 			if (direction == findDirection(firstpos, secondpos)) {
@@ -111,7 +152,18 @@ public class Board extends BoardUtils {
 		return false;
 	}
 
-//moves three without pushing
+	/**
+	 * Moves three if possible without push
+	 * 
+	 * @param firstpos
+	 * @param secondpos
+	 * @param thirdpos
+	 * @param direction
+	 * @param mark
+	 * @requires isLine(firstpos, secondpos, thirdpos) && (getMark(firstpos) == mark
+	 *           || getMark(secondpos) == mark || getMark(thirdpos) == mark)
+	 * @return true if the move was possible
+	 */
 	public boolean moveWithoutPush(String firstpos, String secondpos, String thirdpos, int direction, Mark mark) {
 		if (isLine(firstpos, secondpos, thirdpos) && (getMark(firstpos) == mark || getMark(secondpos) == mark || getMark(thirdpos) == mark)) {
 			String middle = middleOutOfThree(firstpos, secondpos, thirdpos);
@@ -154,7 +206,18 @@ public class Board extends BoardUtils {
 		return false;
 	}
 
-//moves three with pushing
+	/**
+	 * Moves three marbles and pushing is possible
+	 * 
+	 * @param firstpos
+	 * @param secondpos
+	 * @param thirdpos
+	 * @param direction
+	 * @param mark
+	 * @requires isLine(firstpos, secondpos, thirdpos) && (getMark(firstpos) == mark
+	 *           || getMark(secondpos) == mark || getMark(thirdpos) == mark)
+	 * @return true if the move is possible
+	 */
 	public boolean moveWithPush(String firstpos, String secondpos, String thirdpos, int direction, Mark mark) {
 		if (isLine(firstpos, secondpos, thirdpos) && (getMark(firstpos) == mark || getMark(secondpos) == mark || getMark(thirdpos) == mark)) {
 			String middle = middleOutOfThree(firstpos, secondpos, thirdpos);
@@ -219,7 +282,16 @@ public class Board extends BoardUtils {
 		return false;
 	}
 
-//moving
+	/**
+	 * Moves the amount of marbles based on the command input
+	 * 
+	 * @param command
+	 * @param direction
+	 * @param mark
+	 * @requires when a command is split into three to checks if the marbles are a
+	 *           valid key and if it belongs to the given mark
+	 * @return true if the move was possible
+	 */
 	public boolean move(String command, String direction, Mark mark) {
 		String firstpos = "", secondpos = "", thirdpos = "";
 		if (command.length() > 1) {
@@ -252,6 +324,15 @@ public class Board extends BoardUtils {
 		return false;
 	}
 
+	/**
+	 * Checks if pushing and only pushing with the given coordinates is possible
+	 * 
+	 * @param firstpos
+	 * @param secondpos
+	 * @param direction
+	 * @param mark
+	 * @return true if push is possible
+	 */
 	public boolean pushPossible(String firstpos, String secondpos, int direction, Mark mark) {
 		if (this.deepCopy().moveWithPush(firstpos, secondpos, direction, mark) && !this.deepCopy().moveWithoutPush(firstpos, secondpos, direction, mark)) {
 			return true;
@@ -259,6 +340,16 @@ public class Board extends BoardUtils {
 		return false;
 	}
 
+	/**
+	 * Checks if pushing and only pushing is possible
+	 * 
+	 * @param firstpos
+	 * @param secondpos
+	 * @param thirdpos
+	 * @param direction
+	 * @param mark
+	 * @return true if pushing is possible
+	 */
 	public boolean pushPossible(String firstpos, String secondpos, String thirdpos, int direction, Mark mark) {
 		if (this.deepCopy().moveWithPush(firstpos, secondpos, thirdpos, direction, mark) && !this.deepCopy().moveWithoutPush(firstpos, secondpos, thirdpos, direction, mark)) {
 			return true;
@@ -266,16 +357,15 @@ public class Board extends BoardUtils {
 		return false;
 	}
 
+	/**
+	 * Checks if a move is valid
+	 * 
+	 * @param command
+	 * @param direction
+	 * @param mark
+	 * @return true if the move is valid
+	 */
 	public boolean isValidMove(String command, String direction, Mark mark) {
 		return deepCopy().move(command, direction, mark);
-	}
-
-//game test
-//main
-	public static void main(String[] args) {
-		Board board = new Board(2);
-		board.printIndex();
-		board.move("5H6H", "5", Mark.BB);
-		System.out.println(board);
 	}
 }

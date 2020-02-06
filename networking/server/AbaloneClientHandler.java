@@ -33,6 +33,13 @@ public class AbaloneClientHandler implements Runnable {
 	private ArrayList<String> challengedBy;
 	private ArrayList<String> challenging;
 
+	/**
+	 * Gives the values to some of the objects
+	 * 
+	 * @param sock
+	 * @param srv
+	 * @param name
+	 */
 	public AbaloneClientHandler(Socket sock, AbaloneServer srv, String name) {
 		challengedBy = new ArrayList<>();
 		challenging = new ArrayList<>();
@@ -48,6 +55,9 @@ public class AbaloneClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Prints and handles the incoming messages
+	 */
 	@Override
 	public void run() {
 		String msg;
@@ -69,6 +79,12 @@ public class AbaloneClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Handles the incoming command and sends it to different people
+	 * 
+	 * @param msg
+	 * @throws IOException
+	 */
 	private void handleCommand(String msg) throws IOException {
 		String[] msgs = msg.split("" + ProtocolMessages.DELIMITER);
 		if (msgs.length == 1) {
@@ -136,6 +152,12 @@ public class AbaloneClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Checks if a String is readble text
+	 * 
+	 * @param text
+	 * @return
+	 */
 	public String text(String text) {
 		if (!text.matches("^\\s\\w*$")) {
 			return String.valueOf(ProtocolMessages.TEXT) + String.valueOf(ProtocolMessages.DELIMITER) + text + String.valueOf(ProtocolMessages.DELIMITER) + player.getName();
@@ -144,10 +166,21 @@ public class AbaloneClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Returns the local variable playing
+	 * 
+	 * @return playing
+	 */
 	public boolean getPlaying() {
 		return playing;
 	}
 
+	/**
+	 * Attempts to connect the player
+	 * 
+	 * @param name
+	 * @return the message that can be used to signalize if the there was an error
+	 */
 	public String connect(String name) {
 		if (!playerHasConnected && !srv.containsClientWithName(name) && name.matches("^[a-zA-Z0-9]*$")) {
 			player.setName(name);
@@ -162,6 +195,11 @@ public class AbaloneClientHandler implements Runnable {
 		return Room.error("CommandNotRecognized");
 	}
 
+	/**
+	 * Sends states and contents of different room
+	 * 
+	 * @return the message that can be used to signalize if the there was an error
+	 */
 	public String roomsDisplay() {
 		String result = String.valueOf(ProtocolMessages.ROOMS);
 		for (Room r : srv.getRooms()) {
@@ -170,6 +208,11 @@ public class AbaloneClientHandler implements Runnable {
 		return result + "\n";
 	}
 
+	/**
+	 * Denies everyones challenges
+	 * 
+	 * @throws IOException
+	 */
 	public void removeChallengeFromEveryone() throws IOException {
 		String sent = "";
 		for (AbaloneClientHandler ach : srv.getClientArray()) {
@@ -190,6 +233,12 @@ public class AbaloneClientHandler implements Runnable {
 		challenging.clear();
 	}
 
+	/**
+	 * Denies a specific person
+	 * 
+	 * @param name
+	 * @return the message that can be used to signalize if the there was an error
+	 */
 	public String denyChallengeFromPerson(String name) {
 		challengedBy.remove(name);
 		if (srv.containsClientWithName(name)) {
@@ -201,6 +250,13 @@ public class AbaloneClientHandler implements Runnable {
 		return Room.error("CommandNotRecognized");
 	}
 
+	/**
+	 * Joins a room
+	 * 
+	 * @param room
+	 * @return the message that can be used to signalize if the there was an error
+	 * @throws IOException
+	 */
 	public String join(String room) throws IOException {
 		if (playerHasConnected && !playing) {
 			try {
@@ -230,10 +286,21 @@ public class AbaloneClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Shows the current turn
+	 * 
+	 * @return the message that can be used to signalize if the there was an error
+	 */
 	public String turn() {
 		return String.valueOf(ProtocolMessages.TURN) + String.valueOf(ProtocolMessages.DELIMITER) + belongsToRoom.turn() + "\n";
 	}
 
+	/**
+	 * Leave the current room
+	 * 
+	 * @requires playerHasConnected && belongsToRoom != null && !playing
+	 * @return the message that can be used to signalize if the there was an error
+	 */
 	public String leave() {
 		if (playerHasConnected && belongsToRoom != null && !playing) {
 			joinesARoomForTheFirstTime = true;
@@ -243,6 +310,12 @@ public class AbaloneClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Disconnects people from the server
+	 * 
+	 * @requires playerHasConnected && belongsToRoom != null && !playing
+	 * @return the message that can be used to signalize if the there was an error
+	 */
 	public String disconnect() {
 		if (belongsToRoom != null) {
 			belongsToRoom.removeMarblesBecauseOfDisconnection(player.getName());
@@ -257,6 +330,12 @@ public class AbaloneClientHandler implements Runnable {
 		return String.valueOf(ProtocolMessages.DISCONNECT) + String.valueOf(ProtocolMessages.DELIMITER) + player.getName();
 	}
 
+	/**
+	 * Sorts a map according to its values
+	 * 
+	 * @param hm
+	 * @return a sorted map
+	 */
 	public static LinkedHashMap<String, Integer> sortByValue(HashMap<String, Integer> hm) {
 		List<Map.Entry<String, Integer>> list = new LinkedList<Map.Entry<String, Integer>>(hm.entrySet());
 		Collections.sort(list, new Comparator<Map.Entry<String, Integer>>() {
@@ -271,6 +350,11 @@ public class AbaloneClientHandler implements Runnable {
 		return temp;
 	}
 
+	/**
+	 * Sends a String with the leaderBoard
+	 * 
+	 * @return leaderBoard.toString()
+	 */
 	public String leaderBoardDisplay() {
 		LinkedHashMap<String, Integer> sortedMap = sortByValue(srv.getLeaderBoard());
 		String returnedString = String.valueOf(ProtocolMessages.LEADERBOARD);
@@ -281,6 +365,11 @@ public class AbaloneClientHandler implements Runnable {
 		return returnedString + "\n";
 	}
 
+	/**
+	 * Starts a game
+	 * 
+	 * @return the message that can be used to signalize if the there was an error
+	 */
 	public String start() {
 		if (playerHasConnected && belongsToRoom.getLeader().equals(this) && belongsToRoom != null) {
 			playing = true;
@@ -294,6 +383,12 @@ public class AbaloneClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Chooses and ally
+	 * 
+	 * @param name
+	 * @return the message that can be used to signalize if the there was an error
+	 */
 	public String ally(String name) {
 		if (playerHasConnected && belongsToRoom.getLeader().equals(this) && belongsToRoom != null) {
 			return belongsToRoom.ally(name);
@@ -306,6 +401,11 @@ public class AbaloneClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Returns the winners
+	 * 
+	 * @return the finish message with the winners inside
+	 */
 	public String finish() {
 		playing = false;
 		String result = String.valueOf(ProtocolMessages.FINISH) + String.valueOf(ProtocolMessages.DELIMITER);
@@ -315,6 +415,13 @@ public class AbaloneClientHandler implements Runnable {
 		return result;
 	}
 
+	/**
+	 * Makes the move on the board of the room
+	 * 
+	 * @param coordinates
+	 * @param direction
+	 * @return the message that can be used to signalize if the there was an error
+	 */
 	public String move(String coordinates, String direction) {
 		if (playerHasConnected && belongsToRoom != null) {
 			return belongsToRoom.move(coordinates, direction, this.getPlayer());
@@ -325,6 +432,14 @@ public class AbaloneClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Challenges someone
+	 * 
+	 * @param name
+	 * @requires srv.containsClientWithName(name) && !playing && belongsToRoom ==
+	 *           null && !name.equals(player.getName())
+	 * @return the message that can be used to signalize if the there was an error
+	 */
 	public String challenge(String name) {
 		if (srv.containsClientWithName(name) && !playing && belongsToRoom == null && !name.equals(player.getName())) {
 			challenging.add(name);
@@ -338,6 +453,13 @@ public class AbaloneClientHandler implements Runnable {
 		return Room.error("CommandNotRecognized");
 	}
 
+	/**
+	 * Accepts the challenge
+	 * 
+	 * @param name
+	 * @return the message that can be used to signalize if the there was an error
+	 * @throws IOException
+	 */
 	public String acceptChallenge(String name) throws IOException {
 		if (srv.containsClientWithName(name) && !playing && belongsToRoom == null && challengedBy.contains(name)) {
 			for (AbaloneClientHandler ach : srv.getClientArray()) {
@@ -358,10 +480,20 @@ public class AbaloneClientHandler implements Runnable {
 		return Room.error("CommandNotRecognized");
 	}
 
+	/**
+	 * Add a person to the challengedBy ArrayList
+	 * 
+	 * @param name
+	 */
 	public void addChallengers(String name) {
 		challengedBy.add(name);
 	}
 
+	/**
+	 * Removes someone from the ChallendgedBy ArrayList
+	 * 
+	 * @param name
+	 */
 	public void removeChallengers(String name) {
 		challengedBy.remove(name);
 	}
@@ -370,10 +502,22 @@ public class AbaloneClientHandler implements Runnable {
 		return challenging;
 	}
 
+	/**
+	 * Returns the challendgedBy ArrayList
+	 * 
+	 * @return challendgedBy
+	 */
 	public ArrayList<String> getChallengedBy() {
 		return challengedBy;
 	}
 
+	/**
+	 * Sends a message to a specific person
+	 * 
+	 * @param message
+	 * @param name
+	 * @throws IOException
+	 */
 	public void sendToSpecificPerson(String message, String name) throws IOException {
 		if (message.charAt(0) != 'E' && srv.containsClientWithName(name)) {
 			out.write(message);
@@ -393,6 +537,11 @@ public class AbaloneClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Add someone to the leader board
+	 * 
+	 * @param name
+	 */
 	public static void addPointToLeaderBoard(String name) {
 		for (String s : srv.getLeaderBoard().keySet()) {
 			if (s.equals(name)) {
@@ -402,6 +551,12 @@ public class AbaloneClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Sends message to everyone on the server or everyone in the room
+	 * 
+	 * @param message
+	 * @throws IOException
+	 */
 	public void sendToAll(String message) throws IOException {
 		char firstLetter = message.charAt(0);
 		if (firstLetter == ProtocolMessages.ERROR) {
@@ -457,18 +612,36 @@ public class AbaloneClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Sets the room
+	 * 
+	 * @param r
+	 */
 	public void setRoom(Room r) {
 		belongsToRoom = r;
 	}
 
+	/**
+	 * Returns the room
+	 * 
+	 * @return belongsToRoom
+	 */
 	public Room getRoom() {
 		return belongsToRoom;
 	}
 
+	/**
+	 * Returns the player
+	 * 
+	 * @return player
+	 */
 	public Player getPlayer() {
 		return player;
 	}
 
+	/**
+	 * If a person disconnect it shuts the game down
+	 */
 	private void shutdown() {
 		try {
 			sendToAll(disconnect());
@@ -480,10 +653,19 @@ public class AbaloneClientHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Makes a toString
+	 */
 	public String toString() {
 		return player.toString();
 	}
 
+	/**
+	 * Checks if two AbaloneClientHandlers are the same
+	 * 
+	 * @param input
+	 * @return
+	 */
 	public boolean equals(AbaloneClientHandler input) {
 		if (input instanceof AbaloneClientHandler) {
 			return this.toString().equals(input.toString());

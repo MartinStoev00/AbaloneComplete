@@ -12,7 +12,12 @@ public class BoardUtils {
 	protected static final char[] XAXIS = "123456789".toCharArray();
 	protected Map<String, Mark> map = new LinkedHashMap<String, Mark>();
 
-// fill in
+	/**
+	 * Depending on the number of colors on the board, fills the values[] with
+	 * different Mark values.
+	 * 
+	 * @requires numOfColors>= 2 && numOfColors<=4
+	 */
 	public void fillIn() {
 		values = new Mark[61];
 		for (int i = 0; i < 61; i++) {
@@ -80,12 +85,12 @@ public class BoardUtils {
 			values[29] = Mark.EE;
 			values[31] = Mark.EE;
 			break;
-		default:
-			System.out.println("Yo what did u do?");
 		}
 	}
 
-// reset & deepcopy
+	/**
+	 * Fills map with values[]
+	 */
 	public void reset() {
 		int index = 0;
 		for (int i = 0; i < 9; i++) {
@@ -97,7 +102,11 @@ public class BoardUtils {
 		removedItems = new ArrayList<>();
 	}
 
-// deepcopy
+	/**
+	 * Makes a copy of the Board and returns it
+	 * 
+	 * @return copy
+	 */
 	public Board deepCopy() {
 		Board copy = new Board(numOfColors);
 		for (String k : this.map.keySet()) {
@@ -106,7 +115,12 @@ public class BoardUtils {
 		return copy;
 	}
 
-// valid key
+	/**
+	 * Checks if a given String belongs to map.keySet()
+	 * 
+	 * @param String pos
+	 * @return true if a coordinate is in map.KeySet()
+	 */
 	public boolean isValidKey(String pos) {
 		for (String k : map.keySet()) {
 			if (k.equals(pos)) {
@@ -116,6 +130,12 @@ public class BoardUtils {
 		return false;
 	}
 
+	/**
+	 * Takes the first letter of a coordinate and returns the line
+	 * 
+	 * @param char i
+	 * @return the line
+	 */
 	public int line(char i) {
 		for (int j = 0; j < 9; j++) {
 			if (i == YAXIS[j]) {
@@ -125,27 +145,55 @@ public class BoardUtils {
 		return 0;
 	}
 
+	/**
+	 * Checks if a key has an EE value
+	 * 
+	 * @param pos
+	 * @return map.get(pos) == Mark.EE && isValidKey(pos)
+	 */
 	public boolean isEEE(String pos) {
 		return map.get(pos) == Mark.EE && isValidKey(pos);
 	}
 
-// returns mark
+	/**
+	 * Returns the mark that belongs to a given coordiante
+	 * 
+	 * @param pos
+	 * @return map.get(pos)
+	 */
 	public Mark getMark(String pos) {
 		return map.get(pos);
 	}
 
-// returns letter
+	/**
+	 * Returns the letter after a given letter
+	 * 
+	 * @param i
+	 * @return i++
+	 */
 	public char nextLetter(char i) {
 		i++;
 		return i;
 	}
 
+	/**
+	 * Returns the letter before a given letter
+	 * 
+	 * @param i
+	 * @return i--
+	 */
 	public char previousLetter(char i) {
 		i--;
 		return i;
 	}
 
-// find direction
+	/**
+	 * Returns the direction of a coordinate according to another coordinate
+	 * 
+	 * @param initalLocation
+	 * @param aroundLocation
+	 * @return direction
+	 */
 	public int findDirection(String initalLocation, String aroundLocation) {
 		for (int i = 1; i <= 6; i++) {
 			if (aroundLocation.equals(movedCoordinates(initalLocation, i))) {
@@ -155,6 +203,12 @@ public class BoardUtils {
 		return 0;
 	}
 
+	/**
+	 * Gives the mirror direction
+	 * 
+	 * @param direction
+	 * @return mirrorDirection
+	 */
 	public int mirrorDirection(int direction) {
 		switch (direction) {
 		case 1:
@@ -174,7 +228,13 @@ public class BoardUtils {
 		}
 	}
 
-// moving returns coordinates in that direction
+	/**
+	 * Returns the moved coordinate with a given initial coordinate and a direction
+	 * 
+	 * @param pos
+	 * @param direction
+	 * @return movedCoordinate
+	 */
 	public String movedCoordinates(String pos, int direction) {
 		String newPos = "";
 		if (isValidKey(pos)) {
@@ -209,8 +269,9 @@ public class BoardUtils {
 		return null;
 	}
 
-// printing stuff
-// print index
+	/**
+	 * Prints the indices from 0 to 61 in the same format as the board
+	 */
 	public void printIndex() {
 		int currentLine = 1;
 		int lineLimit = 4;
@@ -237,7 +298,11 @@ public class BoardUtils {
 		System.out.println();
 	}
 
-// print super.mapIndex
+	/**
+	 * Returns map.keySet() in a formatted way
+	 * 
+	 * @return map.keySet()
+	 */
 	public String printIndexKey() {
 		String result = "";
 		char currentLine = 'I';
@@ -260,7 +325,11 @@ public class BoardUtils {
 		return result;
 	}
 
-// prints the game
+	/**
+	 * Returns map.values() in a formatted way
+	 * 
+	 * @return map.vlaues()
+	 */
 	public String printGame() {
 		String result = "";
 		char currentLine = '1';
@@ -283,13 +352,19 @@ public class BoardUtils {
 		return result;
 	}
 
-//toString
+	/**
+	 * Combines printIndexKey() and printGame()
+	 */
 	public String toString() {
 		return "" + printIndexKey() + printGame() + "Removed: " + removedItems;
 	}
 
-// winner stuff
-// winner for mark
+	/**
+	 * Checks if a given mark is a winner
+	 * 
+	 * @param mark
+	 * @return true if mark is the winner
+	 */
 	public boolean isWinner(Mark mark) {
 		int numOfMarksInTheGraveYard = 0;
 		if (removedItems.size() > 0) {
@@ -310,6 +385,11 @@ public class BoardUtils {
 		return numOfMarksInTheGraveYard == 6;
 	}
 
+	/**
+	 * Checks if the board has a winner
+	 * 
+	 * @return true if the board has a winner
+	 */
 	public boolean hasWinner() {
 		switch (numOfColors) {
 		case 2:
@@ -323,7 +403,13 @@ public class BoardUtils {
 		}
 	}
 
-// checks if it is a double
+	/**
+	 * Checks if two coordinates are next to each other
+	 * 
+	 * @param firstpos
+	 * @param secondpos
+	 * @return true if they are next to each other
+	 */
 	public boolean checkNextToEachOther(String firstpos, String secondpos) {
 		boolean fstNextToSnd = false;
 		if (isValidKey(firstpos) && isValidKey(secondpos)) {
@@ -336,6 +422,14 @@ public class BoardUtils {
 		return fstNextToSnd;
 	}
 
+	/**
+	 * checks if the are they are the next to each other and are the same color or
+	 * ally colors if there are 4 colors on the board
+	 * 
+	 * @param firstpos
+	 * @param secondpos
+	 * @return checkNextToEachOther(firstpos, secondpos) && isTheSame
+	 */
 	public boolean isLine(String firstpos, String secondpos) {
 		boolean isTheSame;
 		if (numOfColors == 4) {
@@ -346,9 +440,16 @@ public class BoardUtils {
 		return checkNextToEachOther(firstpos, secondpos) && isTheSame;
 	}
 
-// checks if it is a triple
+	/**
+	 * Checks if three coordinates are next to each other
+	 * 
+	 * @param firstpos
+	 * @param secondpos
+	 * @param thirdpos
+	 * @return true if three coordinates are next to each other
+	 */
 	public boolean checkNextToEachOther(String firstpos, String secondpos, String thirdpos) {
-		if(isValidKey(firstpos) && isValidKey(secondpos) && isValidKey(thirdpos)) {
+		if (isValidKey(firstpos) && isValidKey(secondpos) && isValidKey(thirdpos)) {
 			if (isLine(firstpos, secondpos)) {
 				if (thirdpos.equals(movedCoordinates(secondpos, findDirection(firstpos, secondpos)))) {
 					return true;
@@ -366,6 +467,16 @@ public class BoardUtils {
 		return false;
 	}
 
+	/**
+	 * Check if three coordinates are next to each other and if they are the same
+	 * mark or ally marks
+	 * 
+	 * @param firstpos
+	 * @param secondpos
+	 * @param thirdpos
+	 * @return checkNextToEachOther(firstpos, secondpos, thirdpos) &&
+	 *         !isEEE(firstpos) && isTheSame
+	 */
 	public boolean isLine(String firstpos, String secondpos, String thirdpos) {
 		boolean isTheSame = false;
 		if (numOfColors != 4) {
@@ -386,7 +497,14 @@ public class BoardUtils {
 		return checkNextToEachOther(firstpos, secondpos, thirdpos) && !isEEE(firstpos) && isTheSame;
 	}
 
-// things needed for moving three
+	/**
+	 * Returns the coordinate that is the middle out of three
+	 * 
+	 * @param firstpos
+	 * @param secondpos
+	 * @param thirdpos
+	 * @return middle out of the three coordinates
+	 */
 	public String middleOutOfThree(String firstpos, String secondpos, String thirdpos) {
 		if (checkNextToEachOther(firstpos, secondpos, thirdpos)) {
 			String[] allThree = { firstpos, secondpos, thirdpos };
@@ -408,6 +526,13 @@ public class BoardUtils {
 		return null;
 	}
 
+	/**
+	 * Checks the number of enemy marbles in front
+	 * 
+	 * @param pos
+	 * @param direction
+	 * @return number of marbles in front
+	 */
 	public int numOfStuffInFront(String pos, int direction) {
 		String firstInFront = movedCoordinates(pos, direction);
 		String secondInFront = movedCoordinates(firstInFront, direction);
@@ -429,6 +554,13 @@ public class BoardUtils {
 		}
 	}
 
+	/**
+	 * Checks if a String is numeric
+	 * 
+	 * @param str
+	 * @return true if a String is a number
+	 */
+
 	public static boolean isNumeric(String str) {
 		try {
 			Integer.parseInt(str);
@@ -438,6 +570,12 @@ public class BoardUtils {
 		}
 	}
 
+	/**
+	 * Checks if a single marble if can be pushed
+	 * 
+	 * @param pos
+	 * @return true if it is can be pushed
+	 */
 	public boolean isPushable(String pos) {
 		if (!isEEE(pos)) {
 			int result;
@@ -466,6 +604,12 @@ public class BoardUtils {
 		return false;
 	}
 
+	/**
+	 * Returns an ArrayList with marbles in the order they are supposed to be
+	 * playing
+	 * 
+	 * @return ArrayList with the mark in order
+	 */
 	public ArrayList<Mark> differentMark() {
 		ArrayList<Mark> returnedArrayList = new ArrayList<>();
 		switch (numOfColors) {
@@ -490,6 +634,11 @@ public class BoardUtils {
 		return returnedArrayList;
 	}
 
+	/**
+	 * Removes all marks with the same color from the field
+	 * 
+	 * @param m
+	 */
 	public void removeMarbles(Mark m) {
 		for (String s : map.keySet()) {
 			if (map.get(s) == m) {
@@ -498,6 +647,11 @@ public class BoardUtils {
 		}
 	}
 
+	/**
+	 * Returns the map
+	 * 
+	 * @return map
+	 */
 	public Map<String, Mark> getMap() {
 		return map;
 	}

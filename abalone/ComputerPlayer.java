@@ -1,28 +1,48 @@
 package ss.project.abalone;
 
-import java.util.ArrayList;
-
 public class ComputerPlayer extends Player {
 	private Board board;
 	private String thinkingLevel;
 
+	/**
+	 * Constructs a ComputerPlayer with a given name and a thinking level and set
+	 * the to a local variable
+	 * 
+	 * @param name
+	 * @param thinkingLevel
+	 */
 	public ComputerPlayer(String name, String thinkingLevel) {
 		super(name);
 		this.thinkingLevel = thinkingLevel;
 	}
 
+	/**
+	 * Set the local board to a given input
+	 * 
+	 * @param board
+	 */
 	public void setBoard(Board board) {
 		this.board = board;
 	}
-	
+
+	/**
+	 * Set the local variable thinkingLevel to a given input
+	 * 
+	 * @param tl
+	 */
 	public void setThinkingLevel(String tl) {
-		if(tl.equals("2")) {
+		if (tl.equals("2")) {
 			thinkingLevel = "2";
-		} else if(tl.equals("1")) {
+		} else if (tl.equals("1")) {
 			thinkingLevel = "1";
 		}
 	}
 
+	/**
+	 * Returns the first possible move
+	 * 
+	 * @return the first possible move
+	 */
 	public String[] naive() {
 		String result[] = new String[2];
 		for (String s : board.getMap().keySet()) {
@@ -37,6 +57,12 @@ public class ComputerPlayer extends Player {
 		return null;
 	}
 
+	/**
+	 * Checks what move to make based on if it will be pushed, will push or else can
+	 * move three or two at a time
+	 * 
+	 * @return the smart possible move
+	 */
 	public String[] smart() {
 		String result[] = new String[2];
 		// first checks if it is pushable
@@ -111,7 +137,7 @@ public class ComputerPlayer extends Player {
 				}
 			}
 		}
-		//check if can move two if anything else fails
+		// check if can move two if anything else fails
 		for (String s : board.getMap().keySet()) {
 			if (board.getMark(s) == this.getMark()) {
 				for (int i = 1; i <= 6; i++) {
@@ -131,27 +157,16 @@ public class ComputerPlayer extends Player {
 		return naive();
 	}
 
+	/**
+	 * Returns a recommended move based on the thinking level
+	 * 
+	 * @return smart() or naive()
+	 */
 	public String[] recommendedMove() {
 		if (thinkingLevel.equals("2")) {
 			return smart();
 		} else {
 			return naive();
-		}
-	}
-
-	public static void main(String args[]) {
-		ArrayList<Player> p = new ArrayList<>();
-		ComputerPlayer cp = new ComputerPlayer("asdf", "2");
-		p.add(cp);
-		ComputerPlayer cp1 = new ComputerPlayer("asdsdaff", "2");
-		p.add(cp1);
-		Board board = new Board(p);
-		board.printIndex();
-		for (int i = 0; i < 50; i++) {
-			board.move(cp.recommendedMove()[0], cp.recommendedMove()[1], cp.getMark());
-			System.out.println(board);
-			board.move(cp1.recommendedMove()[0], cp1.recommendedMove()[1], cp1.getMark());
-			System.out.println(board);
 		}
 	}
 }
