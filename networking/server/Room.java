@@ -21,6 +21,8 @@ public class Room {
 	private boolean gameHasStarted = false;
 	private ArrayList<AbaloneClientHandler> room;
 
+	
+	
 	/**
 	 * Gives values to the ArrayList with the players and winners and increments the
 	 * room number
@@ -350,6 +352,13 @@ public class Room {
 	 */
 	public String getNumber() {
 		return name;
+	}
+	/**
+	 * Returns the game status
+	 * @return gameHasStarted && !gameHasEnded
+	 */
+	public boolean getGameStatus() {
+		return gameHasStarted && !gameHasEnded;
 	}
 
 	/**

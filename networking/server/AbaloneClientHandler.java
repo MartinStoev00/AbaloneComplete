@@ -29,7 +29,6 @@ public class AbaloneClientHandler implements Runnable {
 	private boolean hasNotShutDown = true;
 	private boolean playing = false;
 	private boolean playerHasConnected = false;
-	private boolean joinesARoomForTheFirstTime = true;
 	private ArrayList<String> challengedBy;
 	private ArrayList<String> challenging;
 
@@ -258,7 +257,7 @@ public class AbaloneClientHandler implements Runnable {
 	 * @throws IOException
 	 */
 	public String join(String room) throws IOException {
-		if (playerHasConnected && !playing) {
+		if (playerHasConnected) {
 			try {
 				int roomNumber;
 				if (room.contains("C")) {
@@ -266,21 +265,21 @@ public class AbaloneClientHandler implements Runnable {
 				} else {
 					roomNumber = Integer.parseInt(room);
 				}
-				if ((roomNumber > 0 && roomNumber < 10) || room.contains("C")) {
-					Room roomToBeJoined = srv.getRooms().get(roomNumber - 1);
-					if (belongsToRoom != null) {
-						joinesARoomForTheFirstTime = false;
+				if (belongsToRoom == null || (belongsToRoom != null && !belongsToRoom.getGameStatus())) {
+					if ((roomNumber > 0 && roomNumber < 10) || room.contains("C")) {
+						Room roomToBeJoined = srv.getRooms().get(roomNumber - 1);
+						if (!roomToBeJoined.getGameStatus()) {
+							if (belongsToRoom != null) {
+								belongsToRoom.leave(this);
+							}
+							return roomToBeJoined.join(this);
+						}
 					}
-					if (!joinesARoomForTheFirstTime) {
-						belongsToRoom.leave(this);
-					}
-					return roomToBeJoined.join(this);
 				}
-
+				return Room.error("CommandNotRecognized");
 			} catch (NumberFormatException e) {
 				return Room.error("CommandNotRecognized");
 			}
-			return Room.error("CommandNotRecognized");
 		} else {
 			return Room.error("NotConnected");
 		}
@@ -302,11 +301,15 @@ public class AbaloneClientHandler implements Runnable {
 	 * @return the message that can be used to signalize if the there was an error
 	 */
 	public String leave() {
-		if (playerHasConnected && belongsToRoom != null && !playing) {
-			joinesARoomForTheFirstTime = true;
+		if (playerHasConnected && belongsToRoom != null && !belongsToRoom.getGameStatus()) {
+			playing = false;
 			return belongsToRoom.leave(this);
-		} else {
+		} else if (belongsToRoom == null) {
+			return Room.error("NoRoom");
+		} else if (belongsToRoom.getGameStatus()) {
 			return Room.error("CannotLeaveInGame");
+		} else {
+			return Room.error("CommandNotRecognized");
 		}
 	}
 
@@ -320,6 +323,7 @@ public class AbaloneClientHandler implements Runnable {
 		if (belongsToRoom != null) {
 			belongsToRoom.removeMarblesBecauseOfDisconnection(player.getName());
 		}
+		playing = false;
 		srv.getLeaderBoard().remove(player.getName());
 		srv.removeClient(this);
 		try {
@@ -371,13 +375,13 @@ public class AbaloneClientHandler implements Runnable {
 	 * @return the message that can be used to signalize if the there was an error
 	 */
 	public String start() {
-		if (playerHasConnected && belongsToRoom.getLeader().equals(this) && belongsToRoom != null) {
+		if (playerHasConnected && belongsToRoom != null && belongsToRoom.getLeader().equals(this)) {
 			playing = true;
 			return belongsToRoom.start();
-		} else if (!belongsToRoom.getLeader().equals(this)) {
-			return Room.error("InvalidPermission");
 		} else if (belongsToRoom == null) {
 			return Room.error("CommandNotRecognized");
+		} else if (!belongsToRoom.getLeader().equals(this)) {
+			return Room.error("InvalidPermission");
 		} else {
 			return Room.error("NotConnected");
 		}
@@ -390,8 +394,10 @@ public class AbaloneClientHandler implements Runnable {
 	 * @return the message that can be used to signalize if the there was an error
 	 */
 	public String ally(String name) {
-		if (playerHasConnected && belongsToRoom.getLeader().equals(this) && belongsToRoom != null) {
+		if (playerHasConnected && belongsToRoom != null && belongsToRoom.getLeader().equals(this)) {
 			return belongsToRoom.ally(name);
+		} else if (belongsToRoom == null) {
+			return Room.error("CommandNotRecognized");
 		} else if (!belongsToRoom.getLeader().equals(this)) {
 			return Room.error("InvalidPermission");
 		} else if (belongsToRoom == null) {
@@ -427,9 +433,8 @@ public class AbaloneClientHandler implements Runnable {
 			return belongsToRoom.move(coordinates, direction, this.getPlayer());
 		} else if (belongsToRoom == null) {
 			return Room.error("CommandNotRecognized");
-		} else {
-			return Room.error("NotConnected");
 		}
+		return Room.error("NotConnected");
 	}
 
 	/**

@@ -355,7 +355,6 @@ public class AbaloneClientTUI implements Runnable {
 	 * @param name
 	 * @return the color of the player
 	 */
-	@SuppressWarnings("exports")
 	public Mark getMarkByName(String name) {
 		for (Player p : players) {
 			if (p.getName().equals(name)) {
