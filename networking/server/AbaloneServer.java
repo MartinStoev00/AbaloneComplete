@@ -68,7 +68,7 @@ public class AbaloneServer implements Runnable {
 		while (ssock == null) {
 			int port = view.getInt("Please enter the server port: ");
 			try {
-				ip = "192.168.1.230";////////////////////////////////////////////////////////////////
+				ip = "localhost";////////////////////////////////////////////////////////////////
 				view.showMessage("Attempting to open a socket at port " + port + "...");
 				ssock = new ServerSocket(port, 0, InetAddress.getByName(ip));
 				view.showMessage("Server started at port " + port);

@@ -29,6 +29,8 @@ public class AbaloneClientTUI implements Runnable {
 	private boolean hasStarted = false;
 	private boolean isConnected = false;
 	private boolean reconnected = false;
+	private InetAddress ip = null;
+	private int port = 0;
 
 	/**
 	 * Gives values to the Client and the Scanner
@@ -45,13 +47,11 @@ public class AbaloneClientTUI implements Runnable {
 	 * @throws ServerUnavailableException
 	 */
 	public void start() throws ServerUnavailableException {
-		InetAddress ip = null;
-		int port = 0;
 		while (ac.sock == null) {
 			try {
 				ip = getIp();
 				port = getInt("Port: ");
-				showMessage("Attempting to connect to " + String.valueOf(ip).substring(1) + ":" + port + "\n");
+				showMessage("Attempting to connect to " + String.valueOf(ip).replace("localhost", "").replace("/", "") + ":" + port + "\n");
 				ac.createConnection(ip, port);
 			} catch (ExitProgram e1) {
 				System.out.println("Could not connect to Server");
@@ -74,6 +74,14 @@ public class AbaloneClientTUI implements Runnable {
 			handleIncomingCommand(response);
 		}
 		if (reconnected) {
+			try {
+				ac.createConnection(ip, port);
+			} catch (ExitProgram e1) {
+				System.out.println("Could not connect to Server");
+			} catch (PortNotAvailableException e) {
+				showMessage("ERROR: could not create a socket on\n" + ip.toString().substring(1) + ":" + port + "\n");
+				showMessage("Please try again\n");
+			}
 			ac.start(thisPersonName);
 		}
 		cp = new ComputerPlayer(thisPersonName, "1");

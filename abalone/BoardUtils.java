@@ -270,35 +270,6 @@ public class BoardUtils {
 	}
 
 	/**
-	 * Prints the indices from 0 to 61 in the same format as the board
-	 */
-	public void printIndex() {
-		int currentLine = 1;
-		int lineLimit = 4;
-		for (int j = 0; j < 4; j++) {
-			System.out.print("  ");
-		}
-		for (int i = 0; i < 61; i++) {
-			if (i == lineLimit) {
-				System.out.print(" " + i + " ");
-				System.out.println();
-				for (int j = 0; j < Math.abs(4 - currentLine); j++) {
-					System.out.print("  ");
-				}
-				lineLimit = lineLimit + 9 - Math.abs(4 - currentLine);
-				currentLine++;
-			} else {
-				if (i < 10) {
-					System.out.print("  " + i + " ");
-				} else {
-					System.out.print(" " + i + " ");
-				}
-			}
-		}
-		System.out.println();
-	}
-
-	/**
 	 * Returns map.keySet() in a formatted way
 	 * 
 	 * @return map.keySet()
