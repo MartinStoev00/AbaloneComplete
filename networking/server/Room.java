@@ -120,6 +120,7 @@ public class Room {
 			}
 			localBoard.removeMarbles(getMarkByPlayerName(name));
 			marks.remove(getMarkByPlayerName(name));
+			room.remove(getPlayerByName(name));
 		} else if (gameHasStarted) {
 			gameHasEnded = true;
 			if (room.size() == 2) {
