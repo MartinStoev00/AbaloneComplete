@@ -9,12 +9,13 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 import ss.project.networking.exceptions.ExitProgram;
+import ss.project.networking.exceptions.PortNotAvailableException;
 import ss.project.networking.exceptions.ServerUnavailableException;
 import ss.project.networking.protocols.ProtocolMessages;
 
 public class AbaloneClient {
 
-	private Socket serverSock;
+	public Socket sock;
 	private BufferedReader in;
 	private BufferedWriter out;
 
@@ -39,14 +40,19 @@ public class AbaloneClient {
 	 * @param addr
 	 * @param port
 	 * @throws ExitProgram
+	 * @throws PortNotAvailableException 
 	 * @throws IOException
 	 */
-	public void createConnection(InetAddress addr, int port) throws ExitProgram, IOException {
+	public void createConnection(InetAddress addr, int port) throws ExitProgram, PortNotAvailableException {
 		clearConnection();
-		while (serverSock == null) {
-			serverSock = new Socket(addr, port);
-			in = new BufferedReader(new InputStreamReader(serverSock.getInputStream()));
-			out = new BufferedWriter(new OutputStreamWriter(serverSock.getOutputStream()));
+		while (sock == null) {
+			try {
+				sock = new Socket(addr, port);
+				in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+				out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
+			} catch (IOException e) {
+				throw new PortNotAvailableException(String.valueOf(port));
+			}
 
 		}
 		System.out.println("Connected");
@@ -56,7 +62,7 @@ public class AbaloneClient {
 	 * Sets local variable to be null
 	 */
 	public void clearConnection() {
-		serverSock = null;
+		sock = null;
 		in = null;
 		out = null;
 	}
@@ -114,7 +120,7 @@ public class AbaloneClient {
 		try {
 			in.close();
 			out.close();
-			serverSock.close();
+			sock.close();
 		} catch (IOException e) {
 			throw new ServerUnavailableException("Could not read from server.");
 		}

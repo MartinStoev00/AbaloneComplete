@@ -232,7 +232,7 @@ public class Room {
 	public String move(String coordinates, String direction, Player player) {
 		boolean isValidMove = localBoard.isValidMove(coordinates, direction, getMarkByPlayerName(turn()));
 		boolean isCurrentMark = getMarkByPlayerName(turn()) == player.getMark();
-		if (!localBoard.hasWinner() && isValidMove && isCurrentMark && turn <= turnLimit && gameHasStarted && !gameHasEnded) {
+		if (!localBoard.hasWinner() && isValidMove && isCurrentMark && turn < turnLimit && gameHasStarted && !gameHasEnded) {
 			localBoard.move(coordinates, direction, getMarkByPlayerName(turn()));
 			turn++;
 			if (localBoard.hasWinner() || turn == turnLimit) {
@@ -251,7 +251,7 @@ public class Room {
 		} else if (gameHasEnded) {
 			return error("RoomHasEnded");
 		} else if (!isValidMove) {
-			return error("MoveNotAllowed" + coordinates + " " + direction);
+			return error("MoveNotAllowed");
 		} else if (turn > turnLimit) {
 			gameHasEnded = true;
 			return error("CommandNotRecognized");

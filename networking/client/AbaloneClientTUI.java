@@ -1,6 +1,5 @@
 package ss.project.networking.client;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -8,8 +7,10 @@ import java.util.Scanner;
 import ss.project.abalone.Board;
 import ss.project.abalone.BoardUtils;
 import ss.project.abalone.ComputerPlayer;
+import ss.project.abalone.Mark;
 import ss.project.abalone.Player;
 import ss.project.networking.exceptions.ExitProgram;
+import ss.project.networking.exceptions.PortNotAvailableException;
 import ss.project.networking.exceptions.ServerUnavailableException;
 import ss.project.networking.protocols.ProtocolMessages;
 
@@ -28,28 +29,36 @@ public class AbaloneClientTUI implements Runnable {
 	private boolean hasStarted = false;
 	private boolean isConnected = false;
 	private boolean reconnected = false;
-/**
- * Gives values to the Client and the Scanner
- */
+
+	/**
+	 * Gives values to the Client and the Scanner
+	 */
 	public AbaloneClientTUI() {
 		ac = new AbaloneClient();
 		scanner = new Scanner(System.in);
 	}
-/**
- * Starts the client, asks for a name, select a bot 
- * option and then chooses to reconnect
- * @throws ServerUnavailableException
- */
+
+	/**
+	 * Starts the client, asks for a name, select a bot option and then chooses to
+	 * reconnect
+	 * 
+	 * @throws ServerUnavailableException
+	 */
 	public void start() throws ServerUnavailableException {
-		InetAddress ip = getIp();
-		int port = getInt("Port: ");
-		showMessage("Attempting to connect to " + String.valueOf(ip).substring(1) + ":" + port + "\n");
-		try {
-			ac.createConnection(ip, port);
-		} catch (ExitProgram e1) {
-			System.out.println("Could not connect to Server");
-		} catch (IOException e) {
-			showMessage("ERROR: could not create a socket on " + ip.toString() + " and port " + port + "\n");
+		InetAddress ip = null;
+		int port = 0;
+		while (ac.sock == null) {
+			try {
+				ip = getIp();
+				port = getInt("Port: ");
+				showMessage("Attempting to connect to " + String.valueOf(ip).substring(1) + ":" + port + "\n");
+				ac.createConnection(ip, port);
+			} catch (ExitProgram e1) {
+				System.out.println("Could not connect to Server");
+			} catch (PortNotAvailableException e) {
+				showMessage("ERROR: could not create a socket on\n" + ip.toString().substring(1) + ":" + port + "\n");
+				showMessage("Please try again\n");
+			}
 		}
 		isConnected = true;
 		while (response.contains(String.valueOf(ProtocolMessages.ERROR) + String.valueOf(ProtocolMessages.DELIMITER)) || response.equals("empty")) {
@@ -64,7 +73,7 @@ public class AbaloneClientTUI implements Runnable {
 			}
 			handleIncomingCommand(response);
 		}
-		if(reconnected) {
+		if (reconnected) {
 			ac.start(thisPersonName);
 		}
 		cp = new ComputerPlayer(thisPersonName, "1");
@@ -101,9 +110,10 @@ public class AbaloneClientTUI implements Runnable {
 			start();
 		}
 	}
-/**
- * Reads the incoming messages and acts based on them
- */
+
+	/**
+	 * Reads the incoming messages and acts based on them
+	 */
 	@Override
 	public void run() {
 		while (isConnected) {
@@ -120,11 +130,13 @@ public class AbaloneClientTUI implements Runnable {
 			}
 		}
 	}
-/**
- * Handles the incoming command
- * @param msg
- * @throws ServerUnavailableException
- */
+
+	/**
+	 * Handles the incoming command
+	 * 
+	 * @param msg
+	 * @throws ServerUnavailableException
+	 */
 	public void handleIncomingCommand(String msg) throws ServerUnavailableException {
 		String[] msgs = msg.split(";");
 		switch (msgs[0]) {
@@ -229,12 +241,8 @@ public class AbaloneClientTUI implements Runnable {
 			}
 			break;
 		case "M":
-			for (int i = 0; i < players.size(); i++) {
-				if (players.get(i).getName().equals(currentPlayer)) {
-					clientBoard.move(msgs[1], msgs[2], players.get(i).getMark());
-					System.out.println("\n" + clientBoard);
-				}
-			}
+			clientBoard.move(msgs[1], msgs[2], getMarkByName(msgs[3]));
+			System.out.println("\n" + clientBoard);
 			break;
 		case "F":
 			if (msgs.length == 2) {
@@ -258,16 +266,8 @@ public class AbaloneClientTUI implements Runnable {
 			break;
 		case "D":
 			System.out.println("\n" + msgs[1] + " has disconnected");
-			int disconnectedNum = 0;
 			if (hasStarted) {
-				for (Player p : players) {
-					if (p.getName().equals(msgs[1])) {
-						disconnectedNum = players.indexOf(p);
-					}
-				}
-				if (disconnectedNum != 0) {
-					clientBoard.removeMarbles(clientBoard.differentMark().get(disconnectedNum));
-				}
+				clientBoard.removeMarbles(getMarkByName(msgs[1]));
 				if (clientBoard.differentMark().size() == 3) {
 					System.out.println("\n" + clientBoard);
 				}
@@ -278,12 +278,14 @@ public class AbaloneClientTUI implements Runnable {
 			break;
 		}
 	}
-/**
- * Sends the user commands to server
- * @param input
- * @throws ExitProgram
- * @throws ServerUnavailableException
- */
+
+	/**
+	 * Sends the user commands to server
+	 * 
+	 * @param input
+	 * @throws ExitProgram
+	 * @throws ServerUnavailableException
+	 */
 	public void handleUserInput(String input) throws ExitProgram, ServerUnavailableException {
 		try {
 			String[] msgs = input.split(" ");
@@ -292,7 +294,8 @@ public class AbaloneClientTUI implements Runnable {
 				ac.room();
 				break;
 			case "P":
-				ac.leaderBoard();;
+				ac.leaderBoard();
+				;
 				break;
 			case "J":
 				ac.join(msgs[1]);
@@ -320,7 +323,7 @@ public class AbaloneClientTUI implements Runnable {
 				System.out.print("> Enter command here: ");
 				break;
 			case "M":
-				ac.move(msgs[1], msgs[2]);
+				ac.move(msgs[1].toUpperCase(), msgs[2]);
 				break;
 			case "Q":
 				if (hasStarted) {
@@ -345,17 +348,37 @@ public class AbaloneClientTUI implements Runnable {
 			System.out.print("> Enter command here: ");
 		}
 	}
-/**
- * Show a message
- * @param message
- */
+
+	/**
+	 * Returns the mark by name
+	 * 
+	 * @param name
+	 * @return the color of the player
+	 */
+	@SuppressWarnings("exports")
+	public Mark getMarkByName(String name) {
+		for (Player p : players) {
+			if (p.getName().equals(name)) {
+				return p.getMark();
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Show a message
+	 * 
+	 * @param message
+	 */
 	public static void showMessage(String message) {
 		System.out.print(message);
 	}
-/**
- * Wants an address
- * @return ip address
- */
+
+	/**
+	 * Wants an address
+	 * 
+	 * @return ip address
+	 */
 	public InetAddress getIp() {
 		System.out.print("Please enter IP address here: ");
 		String ips = scanner.nextLine();
@@ -368,20 +391,23 @@ public class AbaloneClientTUI implements Runnable {
 		}
 		return ip;
 	}
-/**
- * Prints help menu
- */
+
+	/**
+	 * Prints help menu
+	 */
 	public void help() {
 		System.out.println("HELP MANUAL\n" + "d..................................... exit\n" + "m <coordinates> <direction>............move\n" + "a <name>......................picks an ally\n"
 				+ "l............................leave the room\n" + "n <name>.....................deny challenge\n" + "s...........................starts the game\n" + "h..........................help (this menu)\n"
 				+ "w <name>..................challenge someone\n" + "q........................you receive a hint\n" + "p.......................display leaderboard\n" + "y <name>...............accept the challenge\n"
 				+ "j <room>............joins the room inserted\n" + "b <text>...sends text to people in the room\n" + "r...display the rooms and the peopel inside");
 	}
-/**
- * Asks for int 
- * @param question
- * @return the input
- */
+
+	/**
+	 * Asks for int
+	 * 
+	 * @param question
+	 * @return the input
+	 */
 	public static int getInt(String question) {
 		System.out.print(question);
 		String result = scanner.nextLine();
